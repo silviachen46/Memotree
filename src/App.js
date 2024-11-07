@@ -1,21 +1,23 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import React, { useState } from 'react';
 import Chat from './components/Chat';
 import Memo from './components/Memo';
+import Navbar from './components/Navbar';
 import './App.css';
 
 function App() {
+  const [graphData, setGraphData] = useState(null);
+
   return (
     <div className="App">
       <Navbar />
-      <main className="App-main">
-        <Routes>
-          <Route path="/" element={<Navigate to="/chat" replace />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/memo" element={<Memo />} />
-        </Routes>
-      </main>
+      <div className="main-container">
+        <div className="chat-section">
+          <Chat setGraphData={setGraphData} />
+        </div>
+        <div className="memo-section">
+          <Memo graphData={graphData} />
+        </div>
+      </div>
     </div>
   );
 }

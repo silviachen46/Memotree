@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -12,44 +12,30 @@ import './Memo.css';
 const initialNodes = [];
 const initialEdges = [];
 
-function Memo() {
+function Memo({ graphData }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [input, setInput] = useState('');
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
 
-  const handleAddNode = () => {
-    if (!input.trim()) return;
-
-    const newNode = {
-      id: `node-${nodes.length + 1}`,
-      data: { label: input },
-      position: { x: Math.random() * 500, y: Math.random() * 500 },
-      type: 'default',
-    };
-
-    setNodes((nds) => [...nds, newNode]);
-    setInput('');
-  };
+  // Update nodes when graphData changes
+  useEffect(() => {
+    if (graphData) {
+      const newNode = {
+        id: `node-${nodes.length + 1}`,
+        data: { label: graphData },
+        position: { x: Math.random() * 500, y: Math.random() * 500 },
+        type: 'default',
+      };
+      setNodes((nds) => [...nds, newNode]);
+    }
+  }, [graphData]);
 
   return (
     <div className="memo-container">
-      <div className="memo-input-container">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Enter node content..."
-          className="memo-input"
-        />
-        <button onClick={handleAddNode} className="memo-add-button">
-          Add Node
-        </button>
-      </div>
       <div className="reactflow-wrapper">
         <ReactFlow
           nodes={nodes}

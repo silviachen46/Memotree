@@ -1,124 +1,77 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Chat.css';
 
-function Chat() {
-  const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
-  
-  // Generate a session ID when the component mounts
-  const [sessionId] = useState(() => 'session_' + Math.random().toString(36).substr(2, 9));
+function Chat({ setGraphData }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
 
-  // Auto-scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Clear messages and local storage on component mount
   useEffect(() => {
-    scrollToBottom();
-  }, [chatHistory]);
+    setMessages([]);
+    localStorage.removeItem('chatHistory'); // Clear local storage
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
+  const sendMessage = async () => {
+    if (!input.trim()) return;
 
-    const userMessage = message.trim();
-    setMessage('');
-
-    // Add user message to chat
-    setChatHistory(prev => [...prev, { 
-      role: 'user', 
-      content: userMessage,
-      timestamp: new Date().toLocaleTimeString()
-    }]);
-    
-    setIsLoading(true);
+    const userMessage = { role: 'user', content: input };
 
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch('http://localhost:8000/api/chat/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Session-ID': sessionId,  // Send session ID with each request
+          'X-Session-ID': 'default',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify({ message: userMessage }),
+        credentials: 'include',
+        body: JSON.stringify({ message: input })
       });
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      
-      // Add AI response to chat
-      setChatHistory(prev => [...prev, { 
-        role: 'assistant', 
-        content: data.response,
-        timestamp: new Date().toLocaleTimeString()
-      }]);
-    } catch (error) {
-      console.error('Error:', error);
-      setChatHistory(prev => [...prev, { 
-        role: 'error', 
-        content: 'Error: Failed to get response. Please try again.',
-        timestamp: new Date().toLocaleTimeString()
-      }]);
-    }
 
-    setIsLoading(false);
+      // Append new user and assistant messages to the current history
+      const assistantMessage = { role: 'assistant', content: data.response };
+      const newMessages = [...messages, userMessage, assistantMessage];
+
+      setMessages(newMessages);
+      localStorage.setItem('chatHistory', JSON.stringify(newMessages));
+      setGraphData(input); 
+      setInput('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   return (
     <div className="chat-container">
       <div className="chat-messages">
-        {chatHistory.length === 0 && (
-          <div className="empty-chat">
-            Start a conversation by typing a message below
-          </div>
-        )}
-        
-        {chatHistory.map((msg, index) => (
-          <div key={index} className={`message ${msg.role}`}>
-            <div className="message-header">
-              <span className="message-role">
-                {msg.role === 'user' ? 'You' : 'AI Assistant'}
-              </span>
-              <span className="message-time">{msg.timestamp}</span>
+        {messages.map((msg, index) => (
+          msg.role !== 'system' && (
+            <div key={index} className={`message ${msg.role}`}>
+              {msg.role === 'user' ? (
+                <span className="user-message">{msg.content}</span>
+              ) : (
+                <span className="assistant-message">{msg.content}</span>
+              )}
             </div>
-            <div className="message-content">{msg.content}</div>
-          </div>
+          )
         ))}
-        
-        {isLoading && (
-          <div className="message loading">
-            <div className="typing-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
       </div>
-      
-      <form onSubmit={handleSubmit} className="chat-input-form">
+      <div className="chat-input">
         <input
           type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="chat-input"
-          disabled={isLoading}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          placeholder="Type a message..."
         />
-        <button 
-          type="submit" 
-          className="send-button" 
-          disabled={isLoading || !message.trim()}
-        >
-          {isLoading ? 'Sending...' : 'Send'}
-        </button>
-      </form>
+        <button onClick={sendMessage}>Send</button>
+      </div>
     </div>
   );
 }
