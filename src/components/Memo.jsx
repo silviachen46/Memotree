@@ -1,3 +1,59 @@
+// import React, { useState, useCallback, useEffect } from 'react';
+// import ReactFlow, {
+//   Controls,
+//   Background,
+//   useNodesState,
+//   useEdgesState,
+//   addEdge,
+// } from 'reactflow';
+// import 'reactflow/dist/style.css';
+// import './Memo.css';
+
+// const initialNodes = [];
+// const initialEdges = [];
+
+// function Memo({ graphData }) {
+//   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+//   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+//   const onConnect = useCallback(
+//     (params) => setEdges((eds) => addEdge(params, eds)),
+//     [setEdges]
+//   );
+
+//   // Update nodes when graphData changes
+//   useEffect(() => {
+//     if (graphData) {
+//       const newNode = {
+//         id: `node-${nodes.length + 1}`,
+//         data: { label: graphData },
+//         position: { x: Math.random() * 500, y: Math.random() * 500 },
+//         type: 'default',
+//       };
+//       setNodes((nds) => [...nds, newNode]);
+//     }
+//   }, [graphData]);
+
+//   return (
+//     <div className="memo-container">
+//       <div className="reactflow-wrapper">
+//         <ReactFlow
+//           nodes={nodes}
+//           edges={edges}
+//           onNodesChange={onNodesChange}
+//           onEdgesChange={onEdgesChange}
+//           onConnect={onConnect}
+//           fitView
+//         >
+//           <Background />
+//           <Controls />
+//         </ReactFlow>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Memo;
 import React, { useState, useCallback, useEffect } from 'react';
 import ReactFlow, {
   Controls,
@@ -12,7 +68,7 @@ import './Memo.css';
 const initialNodes = [];
 const initialEdges = [];
 
-function Memo({ graphData }) {
+function Memo({ graphData, clearGraphData }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -21,7 +77,7 @@ function Memo({ graphData }) {
     [setEdges]
   );
 
-  // Update nodes when graphData changes
+  // Add a new node only when graphData changes, then clear graphData
   useEffect(() => {
     if (graphData) {
       const newNode = {
@@ -31,8 +87,9 @@ function Memo({ graphData }) {
         type: 'default',
       };
       setNodes((nds) => [...nds, newNode]);
+      clearGraphData(); // Clear graphData after adding node to avoid re-adding
     }
-  }, [graphData]);
+  }, [graphData, setNodes, clearGraphData]);
 
   return (
     <div className="memo-container">

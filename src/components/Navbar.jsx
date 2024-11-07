@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
-import { FaUser } from 'react-icons/fa'; // Make sure to install react-icons
+import { FaUser, FaListUl } from 'react-icons/fa';
 
 function Navbar() {
   const location = useLocation();
@@ -11,6 +11,9 @@ function Navbar() {
       <div className="nav-links">
         <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
           Main
+        </Link>
+        <Link to="/todo" className={`nav-link ${location.pathname === '/todo' ? 'active' : ''}`}>
+          <FaListUl className="nav-icon" /> Todo
         </Link>
         <span className="title">Chat & Memo Board</span>
         <Link to="/login" className="nav-link login-link">
