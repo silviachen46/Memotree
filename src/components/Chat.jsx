@@ -95,7 +95,7 @@ function Chat({ setGraphData }) {
     // Clear messages
     setMessages([]);
     // Clear graph data
-    setGraphData(null);
+    setGraphData({ nodes: [], edges: [] });
     // Clear local storage
     localStorage.removeItem('chatHistory');
     // Reset input
@@ -105,6 +105,8 @@ function Chat({ setGraphData }) {
       setIsRecording(false);
     }
   };
+
+
 
   return (
     <div className="chat-layout">
@@ -136,7 +138,9 @@ function Chat({ setGraphData }) {
           </button>
         </div>
       </div>
-      <RightSidebar onNewChat={handleNewChat} />
+      <RightSidebar 
+        onNewChat={handleNewChat} 
+      />
     </div>
   );
 }

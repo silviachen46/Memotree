@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './RightSidebar.css';
 
-function RightSidebar({ onNewChat }) {
+function RightSidebar({ onNewChat, onResetGraph }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
@@ -13,12 +13,11 @@ function RightSidebar({ onNewChat }) {
         {isCollapsed ? '◀' : '▶'}
       </div>
       <div className="sidebar-content">
-        {/* Other content can go here if needed */}
-      </div>
-      <div className="new-chat-container">
-        <button className="new-chat-button" onClick={onNewChat}>
-          + New Chat
-        </button>
+        <div className="new-chat-container">
+          <button className="new-chat-button" onClick={onNewChat}>
+            + New Chat
+          </button>
+        </div>
       </div>
     </div>
   );

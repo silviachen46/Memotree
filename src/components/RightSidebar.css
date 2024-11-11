@@ -40,14 +40,20 @@
 }
 
 .new-chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 1rem;
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 2rem);
 }
 
-.new-chat-button {
+.new-chat-button,
+.clear-nodes-button,
+.reset-graph-button {
   width: 100%;
   padding: 10px;
-  background-color: #007bff;
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -55,6 +61,29 @@
   transition: background-color 0.2s;
 }
 
+.new-chat-button {
+  background-color: #007bff;
+  color: white;
+}
+
 .new-chat-button:hover {
   background-color: #0056b3;
-} 
+}
+
+.clear-nodes-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.clear-nodes-button:hover {
+  background-color: #c82333;
+}
+
+/* .reset-graph-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.reset-graph-button:hover {
+  background-color: #5a6268;
+}  */
