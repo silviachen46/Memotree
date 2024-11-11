@@ -1,4 +1,5 @@
-// import React, { useState, useCallback, useEffect } from 'react';
+
+// import React, { useCallback, useEffect } from 'react';
 // import ReactFlow, {
 //   Controls,
 //   Background,
@@ -12,7 +13,7 @@
 // const initialNodes = [];
 // const initialEdges = [];
 
-// function Memo({ graphData }) {
+// function Memo({ graphData, clearGraphData }) {
 //   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 //   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -21,18 +22,76 @@
 //     [setEdges]
 //   );
 
-//   // Update nodes when graphData changes
+//   const addNode = (nodeData) => {
+//     const { id, name, attributes } = nodeData;
+
+//     // Prepare label with optional details like duration and timeframe if present
+//     let label = name;
+//     if (attributes) {
+//       const details = Object.entries(attributes)
+//         .map(([key, value]) => `${key}: ${value}`)
+//         .join(', ');
+//       label = `${name}\n${details}`;
+//     }
+
+//     const newNode = {
+//       id,
+//       data: { label },
+//       position: { x: Math.random() * 500, y: Math.random() * 500 },
+//       type: 'default',
+//     };
+//     setNodes((nds) => [...nds, newNode]);
+//   };
+
+//   const addEdgeToGraph = (edgeData) => {
+//     const newEdge = {
+//       id: `${edgeData.source}-${edgeData.target}`,
+//       source: edgeData.source,
+//       target: edgeData.target,
+//       type: edgeData.type,
+//     };
+//     setEdges((eds) => [...eds, newEdge]);
+//   };
+
+//   // Process graphData when it changes
 //   useEffect(() => {
 //     if (graphData) {
-//       const newNode = {
-//         id: `node-${nodes.length + 1}`,
-//         data: { label: graphData },
-//         position: { x: Math.random() * 500, y: Math.random() * 500 },
-//         type: 'default',
-//       };
-//       setNodes((nds) => [...nds, newNode]);
+//       const { nodes: newNodes, edges: newEdges } = graphData;
+
+//       // Add or update nodes
+//       newNodes.forEach((node) => {
+//         if (!nodes.find((n) => n.id === node.id)) {
+//           addNode(node);
+//         } else {
+//           // Update existing node's label with new attributes if already present
+//           setNodes((nds) =>
+//             nds.map((n) =>
+//               n.id === node.id
+//                 ? {
+//                     ...n,
+//                     data: {
+//                       ...n.data,
+//                       label: `${node.name}\n${Object.entries(node.attributes || {})
+//                         .map(([key, value]) => `${key}: ${value}`)
+//                         .join(', ')}`,
+//                     },
+//                   }
+//                 : n
+//             )
+//           );
+//         }
+//       });
+
+//       // Add edges
+//       newEdges.forEach((edge) => {
+//         if (!edges.find((e) => e.source === edge.source && e.target === edge.target)) {
+//           addEdgeToGraph(edge);
+//         }
+//       });
+
+//       clearGraphData(); // Clear graphData after processing to avoid re-adding
 //     }
-//   }, [graphData]);
+//   }, [graphData, nodes, edges, clearGraphData]);
 
 //   return (
 //     <div className="memo-container">
@@ -54,7 +113,8 @@
 // }
 
 // export default Memo;
-import React, { useState, useCallback, useEffect } from 'react';
+// Memo.jsx
+import React, { useCallback, useEffect } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -77,19 +137,77 @@ function Memo({ graphData, clearGraphData }) {
     [setEdges]
   );
 
-  // Add a new node only when graphData changes, then clear graphData
+  const addNode = (nodeData, position) => {
+    const { id, name, attributes } = nodeData;
+
+    // Prepare label with optional attributes for clearer display
+    let label = `${name}`;
+    if (attributes && Object.keys(attributes).length > 0) {
+      const details = Object.entries(attributes)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+      label = `${name}\n${details}`;
+    }
+
+    const newNode = {
+      id,
+      data: { label },
+      position,
+      type: 'default',
+    };
+    setNodes((nds) => [...nds, newNode]);
+  };
+
+  const addEdgeToGraph = (edgeData) => {
+    const newEdge = {
+      id: `${edgeData.source}-${edgeData.target}`,
+      source: edgeData.source,
+      target: edgeData.target,
+      label: edgeData.type, // Label the edge with the relationship type
+      type: 'smoothstep', // Makes the edges look curved and flow better
+    };
+    setEdges((eds) => [...eds, newEdge]);
+  };
+
+  // Process graphData when it changes
   useEffect(() => {
     if (graphData) {
-      const newNode = {
-        id: `node-${nodes.length + 1}`,
-        data: { label: graphData },
-        position: { x: Math.random() * 500, y: Math.random() * 500 },
-        type: 'default',
-      };
-      setNodes((nds) => [...nds, newNode]);
-      clearGraphData(); // Clear graphData after adding node to avoid re-adding
+      const { nodes: newNodes, edges: newEdges } = graphData;
+
+      // Position nodes based on their relationships to prevent overlap and create a flow
+      const positionMap = {}; // To store assigned positions for nodes
+      let xPosition = 50; // Initial x position
+      let yPosition = 50; // Initial y position
+      const spacing = 200; // Space between nodes
+
+      newNodes.forEach((node) => {
+        // Position nodes based on existing nodes
+        const position = positionMap[node.id] || { x: xPosition, y: yPosition };
+        positionMap[node.id] = position;
+        addNode(node, position);
+
+        // Update positioning for the next node
+        xPosition += spacing;
+        if (xPosition > 500) { // Reset x position after certain width
+          xPosition = 50;
+          yPosition += spacing;
+        }
+      });
+
+      newEdges.forEach((edge) => {
+        // Adjust position of target node if not yet positioned
+        if (!positionMap[edge.target]) {
+          positionMap[edge.target] = {
+            x: positionMap[edge.source].x + spacing,
+            y: positionMap[edge.source].y + spacing,
+          };
+        }
+        addEdgeToGraph(edge);
+      });
+
+      clearGraphData(); // Clear graphData after processing to avoid re-adding
     }
-  }, [graphData, setNodes, clearGraphData]);
+  }, [graphData, clearGraphData]);
 
   return (
     <div className="memo-container">

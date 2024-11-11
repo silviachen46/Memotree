@@ -1,0 +1,16 @@
+/* src/components/Calendar.css */
+
+.calendar-container {
+    padding: 20px;
+  }
+  
+  .rbc-event {
+    color: white;
+    font-weight: bold;
+  }
+  
+  .rbc-toolbar {
+    background-color: #f8f9fa;
+    padding: 10px;
+  }
+  /* Add any custom styles for your calendar here */ 
