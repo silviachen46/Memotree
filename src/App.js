@@ -1,25 +1,31 @@
-
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Chat from './components/Chat';
 import Memo from './components/Memo';
+import MemoAlt from './components/MemoAlt';
 import Login from './components/Login';
 import Todo from './components/Todo';
 import Navbar from './components/Navbar';
-import Calendar from './components/Calendar'; // Import the Calendar component
+import Calendar from './components/Calendar';
+import RightSidebar from './components/RightSidebar';
 import { FaComments } from 'react-icons/fa';
 import './App.css';
 
 function MainLayout() {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [graphData, setGraphData] = useState(null); // State to store AI response for nodes
+  const [graphData, setGraphData] = useState(null);
+  const [useMemo, setUseMemo] = useState(true);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
   const handleSetGraphData = (data) => {
-    setGraphData(data); // Update graphData with AI response
+    setGraphData(data);
+  };
+
+  const toggleMemoUsage = () => {
+    setUseMemo(!useMemo);
   };
 
   return (
@@ -32,11 +38,27 @@ function MainLayout() {
       </button>
       
       <div className={`chat-sidebar ${isChatOpen ? 'open' : ''}`}>
-        <Chat setGraphData={handleSetGraphData} /> {/* Pass setGraphData to Chat */}
+        <Chat setGraphData={handleSetGraphData} />
       </div>
       
       <div className={`memo-section ${isChatOpen ? 'shifted' : ''}`}>
-        <Memo graphData={graphData} clearGraphData={() => setGraphData(null)} /> {/* Pass graphData to Memo */}
+        {useMemo ? (
+          <Memo graphData={graphData} clearGraphData={() => setGraphData(null)} />
+        ) : (
+          <MemoAlt />
+        )}
+      </div>
+      
+      <RightSidebar
+        onAddLinkNode={() => console.log("Add Link Node")}
+        onNewChat={() => console.log("New Chat")}
+      />
+      
+      <div className="toggle-container">
+        <label>
+          Use Memo
+          <input type="checkbox" checked={useMemo} onChange={toggleMemoUsage} />
+        </label>
       </div>
     </div>
   );
@@ -49,7 +71,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/todo" element={<Todo />} />
-        <Route path="/calendar" element={<Calendar />} /> {/* New route for Calendar */}
+        <Route path="/calendar" element={<Calendar />} />
         <Route path="/" element={<MainLayout />} />
       </Routes>
     </div>

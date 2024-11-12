@@ -9,7 +9,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './Memo.css';
-
+import LinkNode from './LinkNode';
 const initialNodes = [];
 const initialEdges = [];
 
