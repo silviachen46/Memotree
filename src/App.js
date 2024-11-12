@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Chat from './components/Chat';
 import Memo from './components/Memo';
@@ -15,6 +15,9 @@ function MainLayout() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [graphData, setGraphData] = useState(null);
   const [useMemo, setUseMemo] = useState(true);
+  const [addNodeFunction, setAddNodeFunction] = useState(null);
+  const [clearNodesFunction, setClearNodesFunction] = useState(null);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
@@ -25,7 +28,21 @@ function MainLayout() {
   };
 
   const toggleMemoUsage = () => {
-    setUseMemo(!useMemo);
+    const newMemoState = !useMemo;
+    setUseMemo(newMemoState);
+    setShowSidebar(!newMemoState);
+    
+    if (newMemoState) {
+      setAddNodeFunction(null);
+      setClearNodesFunction(null);
+    }
+  };
+
+  const handleNewChat = () => {
+    console.log("New Chat");
+    if (!useMemo && clearNodesFunction) {
+      clearNodesFunction();
+    }
   };
 
   return (
@@ -38,21 +55,29 @@ function MainLayout() {
       </button>
       
       <div className={`chat-sidebar ${isChatOpen ? 'open' : ''}`}>
-        <Chat setGraphData={handleSetGraphData} />
+        <Chat 
+          setGraphData={handleSetGraphData}
+          onNewChat={handleNewChat}
+        />
       </div>
       
       <div className={`memo-section ${isChatOpen ? 'shifted' : ''}`}>
         {useMemo ? (
           <Memo graphData={graphData} clearGraphData={() => setGraphData(null)} />
         ) : (
-          <MemoAlt />
+          <MemoAlt 
+            setAddNodeFunction={setAddNodeFunction}
+            setClearNodesFunction={setClearNodesFunction}
+          />
         )}
       </div>
       
-      <RightSidebar
-        onAddLinkNode={() => console.log("Add Link Node")}
-        onNewChat={() => console.log("New Chat")}
-      />
+      {!useMemo && showSidebar && (
+        <RightSidebar
+          onAddLinkNode={addNodeFunction}
+          onNewChat={handleNewChat}
+        />
+      )}
       
       <div className="toggle-container">
         <label>

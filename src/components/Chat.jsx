@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Chat.css';
-import RightSidebar from './RightSidebar';
 
-function Chat({ setGraphData }) {
+function Chat({ setGraphData, onNewChat }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -104,9 +103,11 @@ function Chat({ setGraphData }) {
     if (isRecording) {
       setIsRecording(false);
     }
+    // Call parent's onNewChat if provided
+    if (onNewChat) {
+      onNewChat();
+    }
   };
-
-
 
   return (
     <div className="chat-layout">
@@ -138,9 +139,6 @@ function Chat({ setGraphData }) {
           </button>
         </div>
       </div>
-      <RightSidebar 
-        onNewChat={handleNewChat} 
-      />
     </div>
   );
 }

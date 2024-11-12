@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './RightSidebar.css';
 
-function RightSidebar({ onNewChat, onResetGraph }) {
+function RightSidebar({ onNewChat, onAddLinkNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDropupOpen, setIsDropupOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState('link');
@@ -16,9 +16,23 @@ function RightSidebar({ onNewChat, onResetGraph }) {
   };
 
   const handleAddNode = () => {
-    // TODO: Implement add node functionality based on selectedOption
-    console.log(`Adding node with type: ${selectedOption}`);
+    if (onAddLinkNode) {
+      console.log("Calling addNodeFunction");
+      onAddLinkNode();
+    } else {
+      console.log("addNodeFunction is not set");
+    }
   };
+
+  const handleNewChat = () => {
+    if (onNewChat) {
+      onNewChat();
+    }
+  };
+
+  useEffect(() => {
+    console.log("Received onAddLinkNode:", onAddLinkNode);
+  }, [onAddLinkNode]);
 
   return (
     <div className={`right-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -55,7 +69,10 @@ function RightSidebar({ onNewChat, onResetGraph }) {
               Add Node
             </button>
           </div>
-          <button className="new-chat-button" onClick={onNewChat}>
+          <button 
+            className="new-chat-button" 
+            onClick={handleNewChat}
+          >
             + New Chat
           </button>
         </div>
