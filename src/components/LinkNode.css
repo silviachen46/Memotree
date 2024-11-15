@@ -1,23 +1,29 @@
 .link-node {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
+  padding: 15px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: #f9f9f9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 10px;
 }
 
-.link-node input {
-  padding: 5px;
+.input-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.input-section input {
+  flex: 1;
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  flex: 1;
+  font-size: 14px;
 }
 
-.link-node button {
-  padding: 5px 10px;
+.input-section button {
+  padding: 8px 16px;
   border: none;
   border-radius: 4px;
   background-color: #007bff;
@@ -26,6 +32,51 @@
   transition: background-color 0.2s;
 }
 
-.link-node button:hover {
+.input-section button:hover {
   background-color: #0056b3;
+}
+
+.input-section button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #dc3545;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f8d7da;
+  border-radius: 4px;
+}
+
+.link-data {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #eee;
+}
+
+.link-data h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.link-data p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.tags {
+  margin-top: 10px;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #e9ecef;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #495057;
 } 

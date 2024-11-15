@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect } from 'react';
 import ReactFlow, {
   Controls,
@@ -13,6 +12,11 @@ import LinkNode from './LinkNode';
 const initialNodes = [];
 const initialEdges = [];
 
+// Define node types
+const nodeTypes = {
+  linkNode: LinkNode
+};
+
 function Memo({ graphData, clearGraphData }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -22,25 +26,8 @@ function Memo({ graphData, clearGraphData }) {
     [setEdges]
   );
 
-  const addNode = (nodeData, position) => {
-    const { id, name, attributes } = nodeData;
-
-    // Prepare label with optional attributes for clearer display
-    let label = `${name}`;
-    if (attributes && Object.keys(attributes).length > 0) {
-      const details = Object.entries(attributes)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(', ');
-      label = `${name}\n${details}`;
-    }
-
-    const newNode = {
-      id,
-      data: { label },
-      position,
-      type: 'default',
-    };
-    setNodes((nds) => [...nds, newNode]);
+  const addNode = (nodeData) => {
+    setNodes((nds) => [...nds, nodeData]);
   };
 
   const addEdgeToGraph = (edgeData) => {
@@ -76,7 +63,7 @@ function Memo({ graphData, clearGraphData }) {
         // Position nodes based on existing nodes
         const position = positionMap[node.id] || { x: xPosition, y: yPosition };
         positionMap[node.id] = position;
-        addNode(node, position);
+        addNode(node);
 
         // Update positioning for the next node
         xPosition += spacing;
@@ -110,6 +97,7 @@ function Memo({ graphData, clearGraphData }) {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          nodeTypes={nodeTypes}
           fitView
         >
           <Background />

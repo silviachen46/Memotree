@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './RightSidebar.css';
+import { nanoid } from 'nanoid';
 
 function RightSidebar({ onNewChat, onAddLinkNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -14,11 +15,20 @@ function RightSidebar({ onNewChat, onAddLinkNode }) {
     setSelectedOption(value);
     setIsDropupOpen(false);
   };
-
+  
   const handleAddNode = () => {
     if (onAddLinkNode) {
-      console.log("Calling addNodeFunction");
-      onAddLinkNode();
+      const newNode = {
+        id: nanoid(),
+        type: 'linkNode',
+        data: { 
+          label: 'New Link',
+          initialText: ''
+        },
+        position: { x: 100, y: 100 }
+      };
+      
+      onAddLinkNode(newNode);
     } else {
       console.log("addNodeFunction is not set");
     }

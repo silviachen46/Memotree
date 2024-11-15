@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import json
 from .services import GraphService
 from .models import ChatResponse
+import re
+from .extract_link import extract_links
 
 logger = logging.getLogger(__name__)
 load_dotenv()
@@ -128,3 +130,24 @@ def get_chat_history(request):
     session_id = request.headers.get('X-Session-ID', 'default')
     history = conversations.get(session_id, [])
     return Response({"history": history})
+
+@api_view(['POST'])
+def extract_link(request):
+    try:
+        # Find all URLs in the text
+        link = request.data.get('text')
+        
+        if not link:
+            return Response({'links': [], 'data': []})
+            
+        # Extract metadata for each link
+        
+        data_dict = extract_links(link)
+        
+        return Response({
+            'data': data_dict
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in extract_link: {str(e)}")
+        return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
