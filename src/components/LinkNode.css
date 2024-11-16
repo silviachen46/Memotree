@@ -116,3 +116,20 @@
   margin-top: 5px; /* Adjust margin */
   font-size: 14px; /* Adjust font size for expand icon */
 }
+
+/* Add these styles to your existing LinkNode.css */
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background-color: #555;
+  border-radius: 50%;
+}
+
+.react-flow__handle:hover {
+  background-color: #007bff;
+}
+
+.link-node {
+  position: relative;
+  /* ... rest of your existing styles ... */
+}

@@ -59,7 +59,7 @@ function LinkNode({ data }) {
       <Handle type="source" position={Position.Right} id="right" />
       <Handle type="source" position={Position.Bottom} id="bottom" />
       <Handle type="source" position={Position.Left} id="left" />
-      
+
       {linkData ? (
         <div className="link-data">
           <div className="collapse-toggle" onClick={() => setIsCollapsed(!isCollapsed)}>

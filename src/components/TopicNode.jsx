@@ -23,6 +23,10 @@ const TopicNode = memo(({ data }) => {
             <Handle type="source" position={Position.Right} id="right" />
             <Handle type="source" position={Position.Bottom} id="bottom" />
             <Handle type="source" position={Position.Left} id="left" />
+            <Handle type="target" position={Position.Top} id="top" />
+      <Handle type="target" position={Position.Right} id="right" />
+            <Handle type="target" position={Position.Bottom} id="bottom" />
+            <Handle type="target" position={Position.Left} id="left" />
             <div className="topic-content">
                 <input 
                     type="text" 

@@ -46,3 +46,20 @@
     height: 8px;
     background-color: #007bff;
 }
+
+/* Add these styles to your existing TopicNode.css */
+.react-flow__handle {
+    width: 8px;
+    height: 8px;
+    background-color: #555;
+    border-radius: 50%;
+}
+
+.react-flow__handle:hover {
+    background-color: #007bff;
+}
+
+.topic-node {
+    position: relative;
+    /* ... rest of your existing styles ... */
+}

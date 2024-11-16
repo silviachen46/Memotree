@@ -27,10 +27,25 @@ const nodeTypes = {
 function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
+  
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    (params) => {
+      const sourceNode = nodes.find(node => node.id === params.source);
+      const targetNode = nodes.find(node => node.id === params.target);
+
+      // Log message if connecting LinkNode and TopicNode
+      if (sourceNode && targetNode) {
+        if (
+          (sourceNode.type === 'linkNode' && targetNode.type === 'topicNode') ||
+          (sourceNode.type === 'topicNode' && targetNode.type === 'linkNode')
+        ) {
+          console.log("An edge between LinkNode and TopicNode is connected");
+        }
+      }
+      console.log('Edge connected:', params); // Log connection details
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [nodes, setEdges]
   );
 
   // const addNode = useCallback(() => {
