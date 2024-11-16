@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Handle, Position } from 'reactflow';
 import './LinkNode.css';
 
-function LinkNode({ initialText, onSave }) {
-  const [text, setText] = useState(initialText);
+function LinkNode({ data }) {
+  const [text, setText] = useState(data?.initialText || '');
   const [linkData, setLinkData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,8 +43,8 @@ function LinkNode({ initialText, onSave }) {
   const handleSaveNotes = () => {
     setIsNotesSaved(true);
     setIsEditing(false);
-    if (onSave) {
-      onSave(notes);
+    if (data?.onSave) {
+      data.onSave(notes);
     }
   };
 
@@ -54,6 +55,11 @@ function LinkNode({ initialText, onSave }) {
 
   return (
     <div className="link-node">
+      <Handle type="source" position={Position.Top} id="top" />
+      <Handle type="source" position={Position.Right} id="right" />
+      <Handle type="source" position={Position.Bottom} id="bottom" />
+      <Handle type="source" position={Position.Left} id="left" />
+      
       {linkData ? (
         <div className="link-data">
           <div className="collapse-toggle" onClick={() => setIsCollapsed(!isCollapsed)}>

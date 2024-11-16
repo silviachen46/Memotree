@@ -4,6 +4,7 @@ import ReactFlow, {
   Background,
   useNodesState,
   useEdgesState,
+  addEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './Memo.css';
@@ -26,6 +27,11 @@ const nodeTypes = {
 function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
 
   // const addNode = useCallback(() => {
   //   console.log("Adding node");
@@ -90,6 +96,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
           nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
           fitView
         >
           <Background />

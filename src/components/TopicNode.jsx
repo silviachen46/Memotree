@@ -1,5 +1,5 @@
 import React, { useState, memo } from 'react';
-import { Handle } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 import './TopicNode.css';
 
 const TopicNode = memo(({ data }) => {
@@ -19,7 +19,10 @@ const TopicNode = memo(({ data }) => {
 
     return (
         <div className="topic-node">
-            <Handle type="target" position="top" />
+            <Handle type="source" position={Position.Top} id="top" />
+            <Handle type="source" position={Position.Right} id="right" />
+            <Handle type="source" position={Position.Bottom} id="bottom" />
+            <Handle type="source" position={Position.Left} id="left" />
             <div className="topic-content">
                 <input 
                     type="text" 
@@ -35,7 +38,6 @@ const TopicNode = memo(({ data }) => {
                     <button onClick={handleEdit} className="topic-button">Edit</button>
                 )}
             </div>
-            <Handle type="source" position="bottom" />
         </div>
     );
 });
