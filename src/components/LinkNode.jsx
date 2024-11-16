@@ -6,13 +6,18 @@ function LinkNode({ initialText, onSave }) {
   const [linkData, setLinkData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showNotes, setShowNotes] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [isNotesSaved, setIsNotesSaved] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const handleExtractLink = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/chat/extract-link/', {
+      const response = await fetch('http://localhost:8000/api/chat/extract-link-test/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,42 +39,80 @@ function LinkNode({ initialText, onSave }) {
     }
   };
 
+  const handleSaveNotes = () => {
+    setIsNotesSaved(true);
+    setIsEditing(false);
+    if (onSave) {
+      onSave(notes);
+    }
+  };
+
+  const handleEditNotes = () => {
+    setIsEditing(true);
+    setIsNotesSaved(false);
+  };
+
   return (
     <div className="link-node">
-      <div className="input-section">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Enter URL..."
-        />
-        <button 
-          onClick={handleExtractLink}
-          disabled={loading}
-        >
-          {loading ? 'Loading...' : 'Extract'}
-        </button>
-      </div>
+      {linkData ? (
+        <div className="link-data">
+          <div className="collapse-toggle" onClick={() => setIsCollapsed(!isCollapsed)}>
+            {isCollapsed ? '▼' : '▲'}
+          </div>
+          {!isCollapsed ? (
+            <>
+              <h3>{linkData.title}</h3>
+              <p><strong>Author:</strong> {linkData.author}</p>
+              <p><strong>Publisher:</strong> {linkData.publisher}</p>
+              <p><strong>Description:</strong> {linkData.description}</p>
+              <p><strong>Date:</strong> {linkData.date}</p>
+              <div className="tags">
+                <strong>Tags:</strong>
+                {linkData.tags.map((tag, index) => (
+                  <span key={index} className="tag">{tag}</span>
+                ))}
+              </div>
+              <div className="expand-icon" onClick={() => setShowNotes(!showNotes)}>
+                {showNotes ? '▲' : '▼'}
+              </div>
+              {showNotes && (
+                <div className="notes-section">
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Enter your notes here..."
+                    disabled={isNotesSaved && !isEditing}
+                  />
+                  <button onClick={isNotesSaved ? handleEditNotes : handleSaveNotes}>
+                    {isNotesSaved ? 'Edit' : 'Save'}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <h3>{linkData.title}</h3>
+          )}
+        </div>
+      ) : (
+        <div className="input-section">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Enter URL..."
+          />
+          <button 
+            onClick={handleExtractLink}
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Extract'}
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="error-message">
           {error}
-        </div>
-      )}
-
-      {linkData && (
-        <div className="link-data">
-          <h3>{linkData.title}</h3>
-          <p><strong>Author:</strong> {linkData.author}</p>
-          <p><strong>Publisher:</strong> {linkData.publisher}</p>
-          <p><strong>Description:</strong> {linkData.description}</p>
-          <p><strong>Date:</strong> {linkData.date}</p>
-          <div className="tags">
-            <strong>Tags:</strong>
-            {linkData.tags.map((tag, index) => (
-              <span key={index} className="tag">{tag}</span>
-            ))}
-          </div>
         </div>
       )}
     </div>

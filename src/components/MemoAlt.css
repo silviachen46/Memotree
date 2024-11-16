@@ -1,0 +1,12 @@
+.green-background {
+    background-color: #4ab19e;  /* Light green */
+  }
+  
+  /* Style the dots/lines */
+  .react-flow__background {
+    background-color: #44b783;
+  }
+  
+  .react-flow__background-pattern {
+    color: #33ab9f;  /* Dot/line color */
+  }

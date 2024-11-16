@@ -1,29 +1,60 @@
 .link-node {
-  padding: 15px;
+  padding: 6px; /* Reduce padding */
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: #f9f9f9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
-  margin: 10px;
+  max-width: 350px; /* Reduce max width */
+  margin: 6px; /* Reduce margin */
+  font-size: 12px; /* Set a smaller font size for the entire node */
+  transition: all 0.3s ease; /* Smooth transition for collapsing */
 }
 
-.input-section {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+.collapse-toggle {
+  cursor: pointer;
+  font-size: 12px; /* Adjust font size for the toggle */
+  margin-bottom: 5px; /* Space below the toggle */
 }
 
-.input-section input {
-  flex: 1;
-  padding: 8px 12px;
+.link-data h3 {
+  font-size: 12px; /* Smaller title font size */
+  margin: 0 0 5px 0;
+}
+
+.link-data p {
+  font-size: 10px; /* Smaller paragraph font size */
+  margin: 3px 0;
+}
+
+.tags {
+  margin-top: 5px;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #e9ecef;
+  padding: 2px 4px; /* Adjust padding for tags */
+  margin: 2px;
+  border-radius: 12px;
+  font-size: 10px; /* Smaller font size for tags */
+}
+
+.notes-section {
+  margin-top: 5px;
+}
+
+.notes-section textarea {
+  width: 100%;
+  min-height: 50px; /* Reduce minimum height */
+  padding: 4px; /* Adjust padding */
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 10px; /* Smaller font size for textarea */
 }
 
-.input-section button {
-  padding: 8px 16px;
+.notes-section button {
+  padding: 6px 12px; /* Adjust padding */
+  font-size: 12px; /* Smaller font size for button */
   border: none;
   border-radius: 4px;
   background-color: #007bff;
@@ -32,11 +63,11 @@
   transition: background-color 0.2s;
 }
 
-.input-section button:hover {
+.notes-section button:hover {
   background-color: #0056b3;
 }
 
-.input-section button:disabled {
+.notes-section button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
 }
@@ -50,15 +81,15 @@
 }
 
 .link-data {
-  margin-top: 15px;
-  padding: 15px;
+  margin-top: 10px; /* Adjust margin */
+  padding: 8px; /* Reduce padding */
   background-color: white;
   border-radius: 4px;
   border: 1px solid #eee;
 }
 
 .link-data h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 5px 0; /* Adjust margin */
   color: #333;
 }
 
@@ -68,15 +99,20 @@
 }
 
 .tags {
-  margin-top: 10px;
+  margin-top: 5px; /* Adjust margin */
 }
 
 .tag {
   display: inline-block;
   background-color: #e9ecef;
-  padding: 4px 8px;
+  padding: 3px 6px; /* Adjust padding for tags */
   margin: 2px;
   border-radius: 12px;
-  font-size: 12px;
-  color: #495057;
-} 
+  font-size: 10px; /* Smaller font size for tags */
+}
+
+.expand-icon {
+  cursor: pointer;
+  margin-top: 5px; /* Adjust margin */
+  font-size: 14px; /* Adjust font size for expand icon */
+}

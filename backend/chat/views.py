@@ -151,3 +151,22 @@ def extract_link(request):
     except Exception as e:
         logger.error(f"Error in extract_link: {str(e)}")
         return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+
+
+@api_view(['POST'])
+def extract_link_test(request):
+    # Sample test data mimicking the structure of data_dict
+    data_dict = {
+        'author': 'John Doe',
+        'title': 'Sample Article Title',
+        'publisher': 'Sample Publisher',
+        'description': 'This is a sample description of the article.',
+        'date': '2023-10-01',
+        'tags': ['sample', 'test', 'article']
+    }
+    
+    return Response({
+        'data': data_dict
+    })
+        
+    
