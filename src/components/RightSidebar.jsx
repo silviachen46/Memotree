@@ -8,7 +8,8 @@ function RightSidebar({ onNewChat, onAddLinkNode }) {
   const [selectedOption, setSelectedOption] = useState('link');
 
   const options = [
-    { value: 'link', label: 'Link Node' }
+    { value: 'link', label: 'Link Node' },
+    { value: 'topic', label: 'Topic Node' }
   ];
 
   const handleOptionSelect = (value) => {
@@ -18,17 +19,8 @@ function RightSidebar({ onNewChat, onAddLinkNode }) {
   
   const handleAddNode = () => {
     if (onAddLinkNode) {
-      const newNode = {
-        id: nanoid(),
-        type: 'linkNode',
-        data: { 
-          label: 'New Link',
-          initialText: ''
-        },
-        position: { x: 100, y: 100 }
-      };
-      
-      onAddLinkNode(newNode);
+      const nodeType = selectedOption === 'link' ? 'linkNode' : 'topicNode';
+      onAddLinkNode(nodeType);
     } else {
       console.log("addNodeFunction is not set");
     }

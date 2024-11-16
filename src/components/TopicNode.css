@@ -1,0 +1,48 @@
+.topic-node {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 10px;
+    min-width: 150px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.topic-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.topic-input {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.topic-input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.topic-button {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.topic-button:hover {
+    background-color: #0056b3;
+}
+
+.react-flow__handle {
+    width: 8px;
+    height: 8px;
+    background-color: #007bff;
+}
