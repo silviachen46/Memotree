@@ -1,38 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import UserProfile from './UserProfile';
-import './Login.css';
+import './Signup.css';
 
-function Login() {
+function Signup() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem('accessToken');
-    const storedUsername = localStorage.getItem('username');
-    if (token && storedUsername) {
-      setIsLoggedIn(true);
-      setUserData({ username: storedUsername });
-    }
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
     try {
-      const response = await fetch('http://localhost:8000/api/chat/login/', {
+      const response = await fetch('http://localhost:8000/api/chat/register/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           username,
+          email,
           password,
         }),
       });
@@ -40,34 +29,26 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store the tokens and username in localStorage
+        // Store the tokens in localStorage
         localStorage.setItem('accessToken', data.access);
         localStorage.setItem('refreshToken', data.refresh);
-        localStorage.setItem('username', username);
-        setIsLoggedIn(true);
-        setUserData({ username });
+        // Redirect to login page after successful registration
+        navigate('/login');
       } else {
-        setError(data.error || 'Login failed');
+        setError(data.error || 'Registration failed');
       }
     } catch (err) {
-      setError('Failed to login. Please try again.');
+      setError('Failed to register. Please try again.');
     }
   };
 
-  if (isLoggedIn && userData) {
-    return <UserProfile 
-      username={userData.username} 
-      setIsLoggedIn={setIsLoggedIn} 
-    />;
-  }
-
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h2>Welcome Back</h2>
+    <div className="signup-container">
+      <div className="signup-box">
+        <h2>Create Account</h2>
         {error && <div className="error-message">{error}</div>}
         
-        <form onSubmit={handleSubmit} className="login-form">
+        <form onSubmit={handleSubmit} className="signup-form">
           <div className="form-group">
             <label htmlFor="username">Username</label>
             <input
@@ -77,6 +58,18 @@ function Login() {
               onChange={(e) => setUsername(e.target.value)}
               required
               placeholder="Enter your username"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="Enter your email"
             />
           </div>
           
@@ -92,17 +85,17 @@ function Login() {
             />
           </div>
           
-          <button type="submit" className="login-button">
-            Login
+          <button type="submit" className="signup-button">
+            Create Account
           </button>
         </form>
         
-        <div className="login-footer">
-          <p>Don't have an account? <Link to="/signup">Create Account</Link></p>
+        <div className="signup-footer">
+          <p>Already have an account? <Link to="/login">Login</Link></p>
         </div>
       </div>
     </div>
   );
 }
 
-export default Login; 
+export default Signup; 
