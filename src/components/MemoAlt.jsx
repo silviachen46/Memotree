@@ -30,6 +30,11 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
+
   useEffect(() => {
     const addNode = (nodeType) => {
       const newNode = {
@@ -116,6 +121,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
           nodeTypes={nodeTypes}
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
           fitView
         >
           <Background />

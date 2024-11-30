@@ -37,7 +37,13 @@ function Search() {
                         <div className="node-content">
                             <p className="node-text">{node.text}</p>
                             <p className="node-date">
-                                Created: {new Date(node.created_at).toLocaleDateString()}
+                                Last Edited: {new Date(node.last_edited).toLocaleDateString()}
+                            </p>
+                            <p className="node-board">
+                                Board ID: {node.board_id}
+                            </p>
+                            <p className="node-board-name">
+                                Board Name: {node.board_name}
                             </p>
                         </div>
                     </div>

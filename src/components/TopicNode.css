@@ -5,12 +5,16 @@
     padding: 10px;
     min-width: 150px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    max-width: 200px; /* Limit the width of the topic node */
+    position: relative;
 }
 
 .topic-content {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-wrap: break-word; /* Allow text to wrap */
+    white-space: normal; /* Ensure text wraps normally */
 }
 
 .topic-input {
@@ -18,7 +22,8 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
-    width: 100%;
+    width: 100%; /* Keep it full width of the container */
+    max-width: 180px; /* Limit the width of the input field */
 }
 
 .topic-input:disabled {
@@ -44,22 +49,10 @@
 .react-flow__handle {
     width: 8px;
     height: 8px;
-    background-color: #007bff;
-}
-
-/* Add these styles to your existing TopicNode.css */
-.react-flow__handle {
-    width: 8px;
-    height: 8px;
     background-color: #555;
     border-radius: 50%;
 }
 
 .react-flow__handle:hover {
     background-color: #007bff;
-}
-
-.topic-node {
-    position: relative;
-    /* ... rest of your existing styles ... */
 }

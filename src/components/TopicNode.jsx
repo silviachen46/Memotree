@@ -8,8 +8,14 @@ const TopicNode = memo(({ data, id }) => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/chat/topic-node/', {
-                method: 'POST',
+            const url = data?.initialText 
+                ? `http://localhost:8000/api/chat/topic-node/${id}/update/`
+                : 'http://localhost:8000/api/chat/topic-node/';
+                
+            const method = data?.initialText ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -26,7 +32,7 @@ const TopicNode = memo(({ data, id }) => {
                 }
             } else {
                 const errorData = await response.json();
-                console.error('Failed to save topic node:', errorData.error);
+                console.error(`Failed to ${method === 'PUT' ? 'update' : 'save'} topic node:`, errorData.error);
             }
         } catch (err) {
             console.error('Error saving topic node:', err);
@@ -40,8 +46,8 @@ const TopicNode = memo(({ data, id }) => {
     return (
         <div className="topic-node">
             <Handle type="target" position={Position.Top} id="top" />
-            <Handle type="source" position={Position.Right} id="right" />
-            <Handle type="target" position={Position.Bottom} id="bottom" />
+            <Handle type="target" position={Position.Right} id="right" />
+            <Handle type="source" position={Position.Bottom} id="bottom" />
             <Handle type="source" position={Position.Left} id="left" />
             <div className="topic-content">
                 <input 

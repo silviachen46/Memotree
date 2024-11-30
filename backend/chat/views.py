@@ -222,7 +222,10 @@ def create_topic_node(request):
         
         topic_node = TopicNode.objects.create(
             node_id=node_id,
-            text=text
+            text=text,
+            board_id=1,  # Set default board_id
+            board_name="default",  # Set default board_name
+            node_level=1  # Set default node_level
         )
         
         return Response({
@@ -249,11 +252,36 @@ def delete_topic_node(request, node_id):
 
 @api_view(['GET'])
 def search_topic_nodes(request):
-    nodes = TopicNode.objects.all().order_by('-created_at')
+    nodes = TopicNode.objects.all().order_by('-updated_at')
     return Response({
         'nodes': [{
             'node_id': node.node_id,
             'text': node.text,
-            'created_at': node.created_at
+            'last_edited': node.updated_at,
+            'board_id': node.board_id,
+            'board_name': node.board_name
         } for node in nodes]
     })
+
+@api_view(['PUT'])
+def update_topic_node(request, node_id):
+    try:
+        topic_node = TopicNode.objects.get(node_id=node_id)
+        text = request.data.get('text')
+        
+        topic_node.text = text
+        topic_node.save()
+        
+        return Response({
+            'message': 'Topic node updated successfully',
+            'node_id': topic_node.node_id,
+            'text': topic_node.text
+        }, status=status.HTTP_200_OK)
+    except TopicNode.DoesNotExist:
+        return Response({
+            'error': 'Topic node not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)

@@ -40,4 +40,11 @@
     font-size: 12px;
     color: #666;
     margin: 0;
+}
+
+.node-board,
+.node-board-name {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
 } 

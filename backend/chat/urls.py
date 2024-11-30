@@ -10,4 +10,5 @@ urlpatterns = [
     path('topic-node/', views.create_topic_node, name='create_topic_node'),
     path('topic-node/<str:node_id>/', views.delete_topic_node, name='delete_topic_node'),
     path('topic-nodes/', views.search_topic_nodes, name='search_topic_nodes'),
+    path('topic-node/<str:node_id>/update/', views.update_topic_node, name='update_topic_node'),
 ] 

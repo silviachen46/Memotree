@@ -6,9 +6,14 @@
     min-width: 100px;
     text-align: center;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    /* Adjusted styles */
+    max-width: 200px; /* Limit the width */
 }
 
 .text-content {
     font-size: 14px;
     color: #333;
-} 
+    /* Adjusted styles */
+    overflow-wrap: break-word; /* Allow text to wrap */
+    white-space: normal; /* Ensure text wraps normally */
+}
