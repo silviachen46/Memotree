@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 import json
 from .services import GraphService
-from .models import ChatResponse
+from .models import ChatResponse, TopicNode
 import re
 from .extract_link import extract_links
 from rest_framework import status
@@ -213,3 +213,47 @@ def login(request):
             status=status.HTTP_401_UNAUTHORIZED
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_topic_node(request):
+    try:
+        node_id = request.data.get('node_id')
+        text = request.data.get('text')
+        
+        topic_node = TopicNode.objects.create(
+            node_id=node_id,
+            text=text
+        )
+        
+        return Response({
+            'message': 'Topic node created successfully',
+            'node_id': topic_node.node_id
+        }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_topic_node(request, node_id):
+    try:
+        topic_node = TopicNode.objects.get(node_id=node_id)
+        topic_node.delete()
+        return Response({
+            'message': 'Topic node deleted successfully'
+        }, status=status.HTTP_200_OK)
+    except TopicNode.DoesNotExist:
+        return Response({
+            'error': 'Topic node not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def search_topic_nodes(request):
+    nodes = TopicNode.objects.all().order_by('-created_at')
+    return Response({
+        'nodes': [{
+            'node_id': node.node_id,
+            'text': node.text,
+            'created_at': node.created_at
+        } for node in nodes]
+    })

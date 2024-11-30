@@ -10,6 +10,7 @@ import Navbar from './components/Navbar';
 import Calendar from './components/Calendar';
 import RightSidebar from './components/RightSidebar';
 import { FaComments } from 'react-icons/fa';
+import Search from './components/Search';
 import './App.css';
 
 function MainLayout() {
@@ -99,6 +100,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/todo" element={<Todo />} />
         <Route path="/calendar" element={<Calendar />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/" element={<MainLayout />} />
       </Routes>
     </div>

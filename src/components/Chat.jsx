@@ -17,7 +17,7 @@ function Chat({ setGraphData, onNewChat }) {
     const userMessage = { role: 'user', content: input };
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat/', {
+      const response = await fetch('http://localhost:8000/api/chat/chat/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -10,6 +10,7 @@ import 'reactflow/dist/style.css';
 import './Memo.css';
 import LinkNode from './LinkNode';
 import TopicNode from './TopicNode';
+
 const initialNodes = [
   {
     id: 'initial-node',
@@ -22,85 +23,89 @@ const initialNodes = [
 const initialEdges = [];
 const nodeTypes = {
   linkNode: LinkNode,
-  topicNode: TopicNode  // Add TopicNode to nodeTypes
+  topicNode: TopicNode,
 };
+
 function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  
-  const onConnect = useCallback(
-    (params) => {
-      const sourceNode = nodes.find(node => node.id === params.source);
-      const targetNode = nodes.find(node => node.id === params.target);
 
-      // Log message if connecting LinkNode and TopicNode
-      if (sourceNode && targetNode) {
-        if (
-          (sourceNode.type === 'linkNode' && targetNode.type === 'topicNode') ||
-          (sourceNode.type === 'topicNode' && targetNode.type === 'linkNode')
-        ) {
-          console.log("An edge between LinkNode and TopicNode is connected");
+  useEffect(() => {
+    const addNode = (nodeType) => {
+      const newNode = {
+        id: `${nodeType}-${Date.now()}`,
+        type: nodeType,
+        data: { initialText: '' },
+        position: { x: Math.random() * 500, y: Math.random() * 500 },
+      };
+      setNodes((nds) => [...nds, newNode]);
+    };
+
+    setAddNodeFunction(() => addNode);
+    
+    // Set up clear nodes function
+    setClearNodesFunction(() => () => {
+      setNodes(initialNodes);
+      setEdges([]);
+    });
+  }, [setAddNodeFunction, setClearNodesFunction, setNodes]);
+
+  const fetchTopicNodes = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/chat/topic-nodes/');
+      if (!response.ok) {
+        throw new Error('Failed to fetch topic nodes');
+      }
+      const data = await response.json();
+      const topicNodes = data.nodes;
+
+      const newNodes = topicNodes.map((node) => ({
+        id: node.node_id,
+        data: { initialText: node.text },
+        position: { x: Math.random() * 500, y: Math.random() * 500 },
+        type: 'topicNode',
+      }));
+
+      setNodes((nds) => [...nds, ...newNodes]);
+
+      const newEdges = newNodes.map((node) => ({
+        id: `e${'initial-node'}-${node.id}`,
+        source: 'initial-node',
+        target: node.id,
+        animated: false,
+      }));
+
+      setEdges((eds) => [...eds, ...newEdges]);
+    } catch (error) {
+      console.error('Error fetching topic nodes:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTopicNodes();
+  }, []);
+
+  const handleNodesChange = useCallback((changes) => {
+    changes.forEach(async (change) => {
+      if (change.type === 'remove') {
+        const removedNode = nodes.find(node => node.id === change.id);
+        if (removedNode && removedNode.type === 'topicNode') {
+          console.log(`Topic node ${change.id} is removed`);
+          try {
+            const response = await fetch(`http://localhost:8000/api/chat/topic-node/${change.id}/`, {
+              method: 'DELETE'
+            });
+            if (!response.ok) {
+              console.error('Failed to delete topic node from database');
+            }
+          } catch (err) {
+            console.error('Error deleting topic node:', err);
+          }
         }
       }
-      console.log('Edge connected:', params); // Log connection details
-      setEdges((eds) => addEdge(params, eds));
-    },
-    [nodes, setEdges]
-  );
-
-  // const addNode = useCallback(() => {
-  //   console.log("Adding node");
-  //   const newNode = {
-  //     id: `node-${Date.now()}`,
-  //     data: { label: 'New Node' },
-  //     position: { x: Math.random() * 500, y: Math.random() * 500 },
-  //     type: 'default',
-  //   };
-  //   setNodes((nds) => [...nds, newNode]);
-  // }, [setNodes]);
-
-  const addNode = useCallback((type = 'linkNode') => {
-    console.log(`Adding ${type}`);
-    const newNode = {
-      id: `${type}-${Date.now()}`,
-      type: type,
-      data: { 
-        initialText: '',
-        onSave: (text) => {
-          setNodes((nds) =>
-            nds.map((node) =>
-              node.id === newNode.id
-                ? { ...node, data: { ...node.data, initialText: text } }
-                : node
-            )
-          );
-        }
-      },
-      position: { x: Math.random() * 500, y: Math.random() * 500 },
-    };
-    setNodes((nds) => [...nds, newNode]);
-  }, [setNodes]);
-
-  const clearNodes = useCallback(() => {
-    setNodes([initialNodes[0]]); // Reset to only the initial node
-    setEdges([]); // Clear all edges
-  }, [setNodes, setEdges]);
-
-  useEffect(() => {
-    console.log("MemoAlt rendered");
-    if (setAddNodeFunction) {
-      console.log("Setting addNodeFunction");
-      setAddNodeFunction(() => addNode);
-      return () => setAddNodeFunction(null);
-    }
-  }, [setAddNodeFunction, addNode]);
-
-  useEffect(() => {
-    if (setClearNodesFunction) {
-      setClearNodesFunction(() => clearNodes);
-      return () => setClearNodesFunction(null);
-    }
-  }, [setClearNodesFunction, clearNodes]);
+    });
+    onNodesChange(changes);
+  }, [nodes, onNodesChange]);
 
   return (
     <div className="memo-container">
@@ -109,9 +114,8 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
           fitView
         >
           <Background />

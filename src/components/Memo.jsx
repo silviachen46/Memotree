@@ -8,13 +8,14 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './Memo.css';
-import LinkNode from './LinkNode';
+import TextNode from './TextNode';
+
 const initialNodes = [];
 const initialEdges = [];
 
 // Define node types
 const nodeTypes = {
-  linkNode: LinkNode
+  textNode: TextNode,
 };
 
 function Memo({ graphData, clearGraphData }) {
@@ -35,8 +36,8 @@ function Memo({ graphData, clearGraphData }) {
       id: `${edgeData.source}-${edgeData.target}`,
       source: edgeData.source,
       target: edgeData.target,
-      label: edgeData.type, // Label the edge with the relationship type
-      type: 'smoothstep', // Makes the edges look curved and flow better
+      label: edgeData.type,
+      type: 'smoothstep',
     };
     setEdges((eds) => [...eds, newEdge]);
   };
@@ -47,44 +48,25 @@ function Memo({ graphData, clearGraphData }) {
       setNodes([]);
       setEdges([]);
 
-      // If the graph data is empty (after reset), we're done
       if (graphData.nodes.length === 0 && graphData.edges.length === 0) {
         return;
       }
       const { nodes: newNodes, edges: newEdges } = graphData;
 
-      // Position nodes based on their relationships to prevent overlap and create a flow
-      const positionMap = {}; // To store assigned positions for nodes
-      let xPosition = 50; // Initial x position
-      let yPosition = 50; // Initial y position
-      const spacing = 200; // Space between nodes
-
       newNodes.forEach((node) => {
-        // Position nodes based on existing nodes
-        const position = positionMap[node.id] || { x: xPosition, y: yPosition };
-        positionMap[node.id] = position;
-        addNode(node);
-
-        // Update positioning for the next node
-        xPosition += spacing;
-        if (xPosition > 500) { // Reset x position after certain width
-          xPosition = 50;
-          yPosition += spacing;
-        }
+        addNode({
+          id: node.id,
+          data: { text: node.name },
+          position: { x: Math.random() * 500, y: Math.random() * 500 },
+          type: 'textNode',
+        });
       });
 
       newEdges.forEach((edge) => {
-        // Adjust position of target node if not yet positioned
-        if (!positionMap[edge.target]) {
-          positionMap[edge.target] = {
-            x: positionMap[edge.source].x + spacing,
-            y: positionMap[edge.source].y + spacing,
-          };
-        }
         addEdgeToGraph(edge);
       });
 
-      clearGraphData(); // Clear graphData after processing to avoid re-adding
+      clearGraphData();
     }
   }, [graphData, clearGraphData]);
 
