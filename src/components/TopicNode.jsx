@@ -1,10 +1,28 @@
 import React, { useState, memo } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useReactFlow } from 'reactflow';
 import './TopicNode.css';
 
 const TopicNode = memo(({ data, id }) => {
     const [text, setText] = useState(data?.initialText || '');
     const [isEditable, setIsEditable] = useState(!data?.initialText);
+    const { getEdges, getNode } = useReactFlow();
+
+    const handleCollapse = () => {
+        const edges = getEdges();
+        
+        const connectedEdges = edges.filter(edge => 
+            edge.source === id || edge.target === id
+        );
+
+        const connectedNodeIds = connectedEdges.map(edge => {
+            if (edge.source === id) {
+                return edge.target;
+            }
+            return edge.source;
+        });
+
+        console.log('Connected node IDs:', connectedNodeIds);
+    };
 
     const handleSave = async () => {
         try {
@@ -50,6 +68,12 @@ const TopicNode = memo(({ data, id }) => {
             <Handle type="source" position={Position.Bottom} id="bottom" />
             <Handle type="source" position={Position.Left} id="left" />
             <div className="topic-content">
+                <button 
+                    onClick={handleCollapse} 
+                    className="collapse-button"
+                >
+                    🔍
+                </button>
                 <input 
                     type="text" 
                     value={text} 
