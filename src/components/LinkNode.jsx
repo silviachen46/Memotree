@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Handle, Position } from 'reactflow';
 import './LinkNode.css';
 
-function LinkNode({ data }) {
+function LinkNode({ data, id }) {
   const [text, setText] = useState(data?.initialText || '');
-  const [linkData, setLinkData] = useState(null);
+  const [linkData, setLinkData] = useState(data?.linkData || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showNotes, setShowNotes] = useState(false);
@@ -18,20 +18,33 @@ function LinkNode({ data }) {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/chat/extract-link-test/', {
+      const response = await fetch('http://localhost:8000/api/chat/extract-link/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: text }),
+        body: JSON.stringify({ 
+          text: text,
+          node_id: id 
+        }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to extract link data');
       }
 
-      const data = await response.json();
-      setLinkData(data.data);
+      const responseData = await response.json();
+      setLinkData(responseData.data);
+
+      if (responseData.data.parent_id && data.onConnect) {
+        const connection = {
+          source: responseData.data.parent_id,
+          target: id,
+          id: `e${responseData.data.parent_id}-${id}`,
+        };
+        data.onConnect(connection);
+      }
+
     } catch (err) {
       setError(err.message);
       console.error('Error extracting link:', err);

@@ -14,6 +14,7 @@ def tag_extractor(data_dict):
             max_tokens=1024,
         )
     return completion.choices[0].message.content
+
 def extract_links(url):
     params = {'url': url, 'meta': True}
     api_url = 'https://api.microlink.io'
@@ -28,3 +29,17 @@ def extract_links(url):
     parsed_tag = ast.literal_eval(tag_extractor(data_dict))
     data_dict['tags'] = parsed_tag
     return data_dict
+
+def get_topic_sort(topic_text, node_list):
+    groq_client = Groq(api_key="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")
+    PROMPT = f"""you are given a media source description dictionary "{topic_text}" and a list of node on the current level {node_list}.
+    Give only one tag that this topic you think is most relevant to.
+    return only the tag in exactly same format as in the tag list, nothing else.
+    """
+    completion = groq_client.chat.completions.create(
+            messages=[{"role": "system", "content": PROMPT}],
+            model="llama3-70b-8192",
+            temperature=0.7,
+            max_tokens=1024,
+        )
+    return completion.choices[0].message.content

@@ -30,6 +30,10 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  const handleConnect = useCallback((connection) => {
+    setEdges((eds) => [...eds, connection]);
+  }, [setEdges]);
+
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
@@ -40,7 +44,10 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
       const newNode = {
         id: `${nodeType}-${Date.now()}`,
         type: nodeType,
-        data: { initialText: '' },
+        data: { 
+          initialText: '',
+          onConnect: handleConnect
+        },
         position: { x: Math.random() * 500, y: Math.random() * 500 },
       };
       setNodes((nds) => [...nds, newNode]);
@@ -53,58 +60,108 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
       setNodes(initialNodes);
       setEdges([]);
     });
-  }, [setAddNodeFunction, setClearNodesFunction, setNodes]);
+  }, [setAddNodeFunction, setClearNodesFunction, setNodes, handleConnect]);
 
-  const fetchTopicNodes = async () => {
+  const fetchAllNodes = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/chat/topic-nodes/');
-      if (!response.ok) {
-        throw new Error('Failed to fetch topic nodes');
+      // Fetch topic nodes
+      const topicResponse = await fetch('http://localhost:8000/api/chat/topic-nodes/');
+      const linkResponse = await fetch('http://localhost:8000/api/chat/link-nodes/');
+      
+      if (!topicResponse.ok || !linkResponse.ok) {
+        throw new Error('Failed to fetch nodes');
       }
-      const data = await response.json();
-      const topicNodes = data.nodes;
 
-      const newNodes = topicNodes.map((node) => ({
+      const topicData = await topicResponse.json();
+      const linkData = await linkResponse.json();
+
+      // Create topic nodes
+      const topicNodes = topicData.nodes.map((node) => ({
         id: node.node_id,
         data: { initialText: node.text },
         position: { x: Math.random() * 500, y: Math.random() * 500 },
         type: 'topicNode',
       }));
 
-      setNodes((nds) => [...nds, ...newNodes]);
+      // Create link nodes
+      const linkNodes = linkData.nodes.map((node) => ({
+        id: node.node_id,
+        type: 'linkNode',
+        data: { 
+          initialText: node.title,
+          onConnect: handleConnect,
+          linkData: { 
+            author: node.author,
+            title: node.title,
+            publisher: node.publisher,
+            description: node.description,
+            date: node.date,
+            tags: node.tags
+          }
+        },
+        position: { x: Math.random() * 500, y: Math.random() * 500 },
+      }));
 
-      const newEdges = newNodes.map((node) => ({
+      // Set all nodes
+      setNodes([...initialNodes, ...topicNodes, ...linkNodes]);
+
+      // Create edges for topic nodes to initial node
+      const topicEdges = topicNodes.map((node) => ({
         id: `e${'initial-node'}-${node.id}`,
         source: 'initial-node',
         target: node.id,
         animated: false,
       }));
 
-      setEdges((eds) => [...eds, ...newEdges]);
+      // Create edges for link nodes to their parent topic nodes
+      const linkEdges = linkData.nodes.map((node) => ({
+        id: `e${node.parent_id}-${node.node_id}`,
+        source: node.parent_id,
+        target: node.node_id,
+        animated: false,
+      }));
+
+      // Set all edges
+      setEdges([...topicEdges, ...linkEdges]);
+
     } catch (error) {
-      console.error('Error fetching topic nodes:', error);
+      console.error('Error fetching nodes:', error);
     }
   };
 
   useEffect(() => {
-    fetchTopicNodes();
+    fetchAllNodes();
   }, []);
 
   const handleNodesChange = useCallback((changes) => {
     changes.forEach(async (change) => {
       if (change.type === 'remove') {
         const removedNode = nodes.find(node => node.id === change.id);
-        if (removedNode && removedNode.type === 'topicNode') {
-          console.log(`Topic node ${change.id} is removed`);
-          try {
-            const response = await fetch(`http://localhost:8000/api/chat/topic-node/${change.id}/`, {
-              method: 'DELETE'
-            });
-            if (!response.ok) {
-              console.error('Failed to delete topic node from database');
+        if (removedNode) {
+          if (removedNode.type === 'topicNode') {
+            console.log(`Topic node ${change.id} is removed`);
+            try {
+              const response = await fetch(`http://localhost:8000/api/chat/topic-node/${change.id}/`, {
+                method: 'DELETE'
+              });
+              if (!response.ok) {
+                console.error('Failed to delete topic node from database');
+              }
+            } catch (err) {
+              console.error('Error deleting topic node:', err);
             }
-          } catch (err) {
-            console.error('Error deleting topic node:', err);
+          } else if (removedNode.type === 'linkNode') {
+            console.log(`Link node ${change.id} is removed`);
+            try {
+              const response = await fetch(`http://localhost:8000/api/chat/link-node/${change.id}/`, {
+                method: 'DELETE'
+              });
+              if (!response.ok) {
+                console.error('Failed to delete link node from database');
+              }
+            } catch (err) {
+              console.error('Error deleting link node:', err);
+            }
           }
         }
       }

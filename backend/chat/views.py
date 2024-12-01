@@ -7,9 +7,9 @@ import os
 from dotenv import load_dotenv
 import json
 from .services import GraphService
-from .models import ChatResponse, TopicNode
+from .models import ChatResponse, TopicNode, LinkNode
 import re
-from .extract_link import extract_links
+from .extract_link import extract_links, get_topic_sort
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -141,15 +141,45 @@ def get_chat_history(request):
 @api_view(['POST'])
 def extract_link(request):
     try:
-        # Find all URLs in the text
+        # Get node_id from request data
+        node_id = request.data.get('node_id')
+        if not node_id:
+            return Response({'error': 'node_id is required'}, status=400)
+
+        # Find all TopicNodes with board_id 1 and node_level 1
+        topic_nodes = TopicNode.objects.filter(board_id=1, node_level=1)
+        
+        # Extract the text from the topic nodes
+        topic_texts = [node.text for node in topic_nodes]
+        
         link = request.data.get('text')
         
         if not link:
             return Response({'links': [], 'data': []})
             
         # Extract metadata for each link
-        
         data_dict = extract_links(link)
+        tag_assigned = get_topic_sort(data_dict['description'] + data_dict['title'], topic_texts)
+        logger.debug(f'Tag assigned: {tag_assigned}')
+        parent_id = TopicNode.objects.filter(board_id=1, node_level=1, text=tag_assigned).first().node_id
+        data_dict['parent_id'] = parent_id
+        
+        # Create LinkNode in database
+        try:
+            link_node = LinkNode.objects.create(
+                node_id=node_id,  # Use the node_id from request
+                author=data_dict['author'],
+                title=data_dict['title'],
+                publisher=data_dict['publisher'],
+                description=data_dict['description'],
+                date=data_dict['date'],
+                tags=data_dict['tags'],
+                parent_id=data_dict['parent_id']
+            )
+            logger.info(f'Created LinkNode with id: {link_node.node_id}')
+        except Exception as e:
+            logger.error(f'Error creating LinkNode: {str(e)}')
+            raise
         
         return Response({
             'data': data_dict
@@ -159,9 +189,44 @@ def extract_link(request):
         logger.error(f"Error in extract_link: {str(e)}")
         return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
 
+@api_view(['DELETE'])
+def delete_link_node(request, node_id):
+    try:
+        link_node = LinkNode.objects.get(node_id=node_id)
+        link_node.delete()
+        return Response({
+            'message': 'Link node deleted successfully'
+        }, status=status.HTTP_200_OK)
+    except LinkNode.DoesNotExist:
+        return Response({
+            'error': 'Link node not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def get_link_nodes(request):
+    nodes = LinkNode.objects.all()
+    return Response({
+        'nodes': [{
+            'node_id': node.node_id,
+            'author': node.author,
+            'title': node.title,
+            'publisher': node.publisher,
+            'description': node.description,
+            'date': node.date,
+            'tags': node.tags,
+            'parent_id': node.parent_id
+        } for node in nodes]
+    })
 
 @api_view(['POST'])
 def extract_link_test(request):
+    topic_nodes = TopicNode.objects.filter(board_id=1, node_level=1)
+    if topic_nodes:
+        topic_texts = [node.text for node in topic_nodes]
+    # Extract the text from the topic nodes
+    else:
+        topic_texts = ""
+    logger.debug(f'Topic texts: {topic_texts}')  # Log at DEBUG level
     # Sample test data mimicking the structure of data_dict
     data_dict = {
         'author': 'John Doe',
@@ -169,7 +234,8 @@ def extract_link_test(request):
         'publisher': 'Sample Publisher',
         'description': 'This is a sample description of the article.',
         'date': '2023-10-01',
-        'tags': ['sample', 'test', 'article']
+        'tags': ['sample', 'test', 'article'],
+        'test': topic_texts
     }
     
     return Response({
@@ -252,16 +318,35 @@ def delete_topic_node(request, node_id):
 
 @api_view(['GET'])
 def search_topic_nodes(request):
-    nodes = TopicNode.objects.all().order_by('-updated_at')
-    return Response({
-        'nodes': [{
-            'node_id': node.node_id,
-            'text': node.text,
-            'last_edited': node.updated_at,
-            'board_id': node.board_id,
-            'board_name': node.board_name
-        } for node in nodes]
-    })
+    search_type = request.GET.get('type', 'topic')  # 'topic' or 'link'
+    search_query = request.GET.get('query', '')
+
+    if search_type == 'topic':
+        # Search in TopicNode
+        nodes = TopicNode.objects.filter(text__icontains=search_query).order_by('-updated_at')
+        return Response({
+            'nodes': [{
+                'node_id': node.node_id,
+                'text': node.text,
+                'last_edited': node.updated_at,
+                'board_id': node.board_id,
+                'board_name': node.board_name
+            } for node in nodes]
+        })
+    else:
+        # Search in LinkNode
+        nodes = LinkNode.objects.filter(
+            title__icontains=search_query
+        ).order_by('-updated_at')
+        return Response({
+            'nodes': [{
+                'node_id': node.node_id,
+                'title': node.title,
+                'description': node.description,
+                'tags': node.tags,
+                'last_edited': node.updated_at
+            } for node in nodes]
+        })
 
 @api_view(['PUT'])
 def update_topic_node(request, node_id):
@@ -281,6 +366,47 @@ def update_topic_node(request, node_id):
         return Response({
             'error': 'Topic node not found'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_link_node(request):
+    try:
+        node_id = request.data.get('node_id')
+        author = request.data.get('author')
+        title = request.data.get('title')
+        publisher = request.data.get('publisher')
+        description = request.data.get('description')
+        date = request.data.get('date')
+        tags = request.data.get('tags')
+        parent_id = request.data.get('parent_id')
+        
+        link_node = LinkNode.objects.create(
+            node_id=node_id,
+            author=author,
+            title=title,
+            publisher=publisher,
+            description=description,
+            date=date,
+            tags=tags,
+            parent_id=parent_id
+        )
+        
+        return Response({
+            'message': 'Link node created successfully',
+            'node_id': link_node.node_id,
+            'data': {
+                'author': link_node.author,
+                'title': link_node.title,
+                'publisher': link_node.publisher,
+                'description': link_node.description,
+                'date': link_node.date,
+                'tags': link_node.tags,
+                'parent_id': link_node.parent_id
+            }
+        }, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({
             'error': str(e)
