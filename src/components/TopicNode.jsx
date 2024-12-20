@@ -5,23 +5,42 @@ import './TopicNode.css';
 const TopicNode = memo(({ data, id }) => {
     const [text, setText] = useState(data?.initialText || '');
     const [isEditable, setIsEditable] = useState(!data?.initialText);
-    const { getEdges, getNode } = useReactFlow();
+    const { getEdges, getNode, setNodes } = useReactFlow();
+    const [areNodesHidden, setAreNodesHidden] = useState(false); // State to track visibility
 
     const handleCollapse = () => {
         const edges = getEdges();
         
+        // Find all connected edges for the current topic node
         const connectedEdges = edges.filter(edge => 
             edge.source === id || edge.target === id
         );
 
+        // Get the IDs of connected nodes
         const connectedNodeIds = connectedEdges.map(edge => {
-            if (edge.source === id) {
-                return edge.target;
-            }
-            return edge.source;
+            return edge.source === id ? edge.target : edge.source;
         });
 
-        console.log('Connected node IDs:', connectedNodeIds);
+        // Filter for link nodes that start with "linkNode"
+        const linkNodeIds = connectedNodeIds.filter(nodeId => {
+            const node = getNode(nodeId);
+            return node && node.type === 'linkNode' && nodeId.startsWith("linkNode");
+        });
+
+        // Toggle visibility
+        setNodes((nds) => 
+            nds.map(node => {
+                if (linkNodeIds.includes(node.id)) {
+                    return { ...node, hidden: !areNodesHidden }; // Toggle hidden state
+                }
+                return node;
+            })
+        );
+
+        // Update the visibility state
+        setAreNodesHidden(prev => !prev);
+
+        console.log('Connected link node IDs toggled:', linkNodeIds);
     };
 
     const handleSave = async () => {
@@ -72,7 +91,7 @@ const TopicNode = memo(({ data, id }) => {
                     onClick={handleCollapse} 
                     className="collapse-button"
                 >
-                    🔍
+                    {areNodesHidden ? '🔼' : '🔍'} {/* Change icon based on state */}
                 </button>
                 <input 
                     type="text" 
