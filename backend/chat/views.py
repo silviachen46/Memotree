@@ -394,9 +394,18 @@ def create_link_node(request):
             parent_id=parent_id
         )
         
+        # Update the corresponding TopicNode to include the new link node ID
+        topic_node = TopicNode.objects.get(node_id=parent_id)
+        topic_node.child_ids.append(link_node.node_id)  # Add the new link node ID
+        topic_node.save()  # Save the updated topic node
+        
+        # Log the child_ids of the parent topic node to the frontend console
+        print(f"Child IDs for Topic Node {parent_id}: {topic_node.child_ids}")  # Log to console
+        
         return Response({
             'message': 'Link node created successfully',
             'node_id': link_node.node_id,
+            'child_ids': topic_node.child_ids,  # Include child_ids in the response
             'data': {
                 'author': link_node.author,
                 'title': link_node.title,

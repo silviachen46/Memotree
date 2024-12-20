@@ -19,6 +19,7 @@ class TopicNode(models.Model):
     board_id = models.IntegerField(default=1)
     board_name = models.CharField(max_length=255, default="default")
     node_level = models.IntegerField(default=1)
+    child_ids = models.JSONField(default=list)
 
     def __str__(self):
         return f"Topic Node: {self.text[:50]}..."
