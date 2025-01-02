@@ -14,4 +14,6 @@ urlpatterns = [
     path('link-node/', views.create_link_node, name='create_link_node'),
     path('link-node/<str:node_id>/', views.delete_link_node, name='delete_link_node'),
     path('link-nodes/', views.get_link_nodes, name='get_link_nodes'),
+    path('topic-node/<str:node_id>/update-position/', views.update_topic_node_position, name='update_topic_node_position'),
+    path('link-node/<str:node_id>/update-position/', views.update_link_node_position, name='update_link_node_position'),
 ] 

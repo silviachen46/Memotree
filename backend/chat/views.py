@@ -146,6 +146,10 @@ def extract_link(request):
         if not node_id:
             return Response({'error': 'node_id is required'}, status=400)
 
+        # Get position data
+        x = request.data.get('x', 0.0)
+        y = request.data.get('y', 0.0)
+
         # Find all TopicNodes with board_id 1 and node_level 1
         topic_nodes = TopicNode.objects.filter(board_id=1, node_level=1)
         
@@ -153,33 +157,43 @@ def extract_link(request):
         topic_texts = [node.text for node in topic_nodes]
         
         link = request.data.get('text')
-        
+        logger.debug(f'link data: {link}')
         if not link:
             return Response({'links': [], 'data': []})
             
         # Extract metadata for each link
-        data_dict = extract_links(link)
-        tag_assigned = get_topic_sort(data_dict['description'] + data_dict['title'], topic_texts)
-        logger.debug(f'Tag assigned: {tag_assigned}')
-        parent_id = TopicNode.objects.filter(board_id=1, node_level=1, text=tag_assigned).first().node_id
-        data_dict['parent_id'] = parent_id
         
-        # Create LinkNode in database
+        data_dict = extract_links(link)
+        try:
+            tag_assigned = get_topic_sort(data_dict['description'] + data_dict['title'], topic_texts)
+            logger.debug(f'Tag assigned: {tag_assigned}')
+            parent_id = TopicNode.objects.filter(board_id=1, node_level=1, text=tag_assigned).first().node_id
+            data_dict['parent_id'] = parent_id
+        except Exception as e:
+            logger.error(f'Error extracting LinkNode: {str(e)}')
+            raise
+        
+        # Create LinkNode in database with position
         try:
             link_node = LinkNode.objects.create(
-                node_id=node_id,  # Use the node_id from request
+                node_id=node_id,
                 author=data_dict['author'],
                 title=data_dict['title'],
                 publisher=data_dict['publisher'],
                 description=data_dict['description'],
                 date=data_dict['date'],
                 tags=data_dict['tags'],
-                parent_id=data_dict['parent_id']
+                parent_id=data_dict['parent_id'],
+                x=x,  # Store x position
+                y=y   # Store y position
             )
             logger.info(f'Created LinkNode with id: {link_node.node_id}')
         except Exception as e:
             logger.error(f'Error creating LinkNode: {str(e)}')
             raise
+        
+        # Include position in the response
+        data_dict['position'] = {'x': link_node.x, 'y': link_node.y}
         
         return Response({
             'data': data_dict
@@ -214,7 +228,9 @@ def get_link_nodes(request):
             'description': node.description,
             'date': node.date,
             'tags': node.tags,
-            'parent_id': node.parent_id
+            'parent_id': node.parent_id,
+            'x': node.x,  # Include x position
+            'y': node.y   # Include y position
         } for node in nodes]
     })
 
@@ -285,18 +301,24 @@ def create_topic_node(request):
     try:
         node_id = request.data.get('node_id')
         text = request.data.get('text')
+        # Get position from request data, default to 0,0 if not provided
+        x = request.data.get('x', 0.0)
+        y = request.data.get('y', 0.0)
         
         topic_node = TopicNode.objects.create(
             node_id=node_id,
             text=text,
-            board_id=1,  # Set default board_id
-            board_name="default",  # Set default board_name
-            node_level=1  # Set default node_level
+            board_id=1,
+            board_name="default",
+            node_level=1,
+            x=x,  # Store x position
+            y=y   # Store y position
         )
         
         return Response({
             'message': 'Topic node created successfully',
-            'node_id': topic_node.node_id
+            'node_id': topic_node.node_id,
+            'position': {'x': topic_node.x, 'y': topic_node.y}
         }, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({
@@ -318,7 +340,7 @@ def delete_topic_node(request, node_id):
 
 @api_view(['GET'])
 def search_topic_nodes(request):
-    search_type = request.GET.get('type', 'topic')  # 'topic' or 'link'
+    search_type = request.GET.get('type', 'topic')
     search_query = request.GET.get('query', '')
 
     if search_type == 'topic':
@@ -330,7 +352,9 @@ def search_topic_nodes(request):
                 'text': node.text,
                 'last_edited': node.updated_at,
                 'board_id': node.board_id,
-                'board_name': node.board_name
+                'board_name': node.board_name,
+                'x': node.x,  # Include x position
+                'y': node.y   # Include y position
             } for node in nodes]
         })
     else:
@@ -344,7 +368,9 @@ def search_topic_nodes(request):
                 'title': node.title,
                 'description': node.description,
                 'tags': node.tags,
-                'last_edited': node.updated_at
+                'last_edited': node.updated_at,
+                'x': node.x,  # Include x position
+                'y': node.y   # Include y position
             } for node in nodes]
         })
 
@@ -382,6 +408,9 @@ def create_link_node(request):
         date = request.data.get('date')
         tags = request.data.get('tags')
         parent_id = request.data.get('parent_id')
+        # Get position from request data, default to 0,0 if not provided
+        x = request.data.get('x', 0.0)
+        y = request.data.get('y', 0.0)
         
         link_node = LinkNode.objects.create(
             node_id=node_id,
@@ -391,22 +420,21 @@ def create_link_node(request):
             description=description,
             date=date,
             tags=tags,
-            parent_id=parent_id
+            parent_id=parent_id,
+            x=x,  # Store x position
+            y=y   # Store y position
         )
         
         # Update the corresponding TopicNode to include the new link node ID if it's a LinkNode
-        if link_node.node_id.startswith("linkNode"):  # Check if the node_id starts with "linkNode"
+        if link_node.node_id.startswith("linkNode"):
             topic_node = TopicNode.objects.get(node_id=parent_id)
-            topic_node.child_ids.append(link_node.node_id)  # Add the new link node ID
-            topic_node.save()  # Save the updated topic node
-        
-            # Log the child_ids of the parent topic node to the frontend console
-            print(f"Child IDs for Topic Node {parent_id}: {topic_node.child_ids}")  # Log to console
+            topic_node.child_ids.append(link_node.node_id)
+            topic_node.save()
         
         return Response({
             'message': 'Link node created successfully',
             'node_id': link_node.node_id,
-            'child_ids': topic_node.child_ids if link_node.node_id.startswith("linkNode") else [],  # Include child_ids in the response
+            'child_ids': topic_node.child_ids if link_node.node_id.startswith("linkNode") else [],
             'data': {
                 'author': link_node.author,
                 'title': link_node.title,
@@ -414,10 +442,37 @@ def create_link_node(request):
                 'description': link_node.description,
                 'date': link_node.date,
                 'tags': link_node.tags,
-                'parent_id': link_node.parent_id
+                'parent_id': link_node.parent_id,
+                'position': {'x': link_node.x, 'y': link_node.y}
             }
         }, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_topic_node_position(request, node_id):
+    try:
+        topic_node = TopicNode.objects.get(node_id=node_id)
+        topic_node.x = request.data.get('x', topic_node.x)
+        topic_node.y = request.data.get('y', topic_node.y)
+        topic_node.save()
+        return Response({'message': 'Topic node position updated successfully'}, status=status.HTTP_200_OK)
+    except TopicNode.DoesNotExist:
+        return Response({'error': 'Topic node not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_link_node_position(request, node_id):
+    try:
+        link_node = LinkNode.objects.get(node_id=node_id)
+        link_node.x = request.data.get('x', link_node.x)
+        link_node.y = request.data.get('y', link_node.y)
+        link_node.save()
+        return Response({'message': 'Link node position updated successfully'}, status=status.HTTP_200_OK)
+    except LinkNode.DoesNotExist:
+        return Response({'error': 'Link node not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

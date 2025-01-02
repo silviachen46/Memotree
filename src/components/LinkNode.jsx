@@ -25,7 +25,9 @@ function LinkNode({ data, id }) {
         },
         body: JSON.stringify({ 
           text: text,
-          node_id: id 
+          node_id: id,
+          x: data.position?.x || Math.random() * 500,
+          y: data.position?.y || Math.random() * 500
         }),
       });
 

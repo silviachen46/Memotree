@@ -45,6 +45,9 @@ function Search() {
                         <p className="node-board-name">
                             Board Name: {node.board_name}
                         </p>
+                        <p className="node-position">
+                            Position: (X: {node.x}, Y: {node.y})
+                        </p>
                     </div>
                 </div>
             );
@@ -61,6 +64,9 @@ function Search() {
                         </div>
                         <p className="node-date">
                             Last Edited: {new Date(node.last_edited).toLocaleDateString()}
+                        </p>
+                        <p className="node-position">
+                            Position: (X: {node.x}, Y: {node.y})
                         </p>
                     </div>
                 </div>

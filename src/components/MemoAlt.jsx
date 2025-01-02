@@ -41,16 +41,38 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
 
   useEffect(() => {
     const addNode = (nodeType) => {
-      const newNode = {
-        id: `${nodeType}-${Date.now()}`,
-        type: nodeType,
-        data: { 
-          initialText: '',
-          onConnect: handleConnect
-        },
-        position: { x: Math.random() * 500, y: Math.random() * 500 },
-      };
-      setNodes((nds) => [...nds, newNode]);
+        const position = {
+            x: Math.random() * 500,
+            y: Math.random() * 500
+        };
+        
+        const newNode = {
+            id: `${nodeType}-${Date.now()}`,
+            type: nodeType,
+            data: { 
+                initialText: '',
+                onConnect: handleConnect
+            },
+            position: position,
+        };
+        
+        // Include position in the node creation request
+        if (nodeType === 'topicNode') {
+            fetch('http://localhost:8000/api/chat/topic-node/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    node_id: newNode.id,
+                    text: '',
+                    x: position.x,
+                    y: position.y
+                }),
+            });
+        }
+        
+        setNodes((nds) => [...nds, newNode]);
     };
 
     setAddNodeFunction(() => addNode);
@@ -75,15 +97,15 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
       const topicData = await topicResponse.json();
       const linkData = await linkResponse.json();
 
-      // Create topic nodes
+      // Create topic nodes with stored positions
       const topicNodes = topicData.nodes.map((node) => ({
         id: node.node_id,
         data: { initialText: node.text },
-        position: { x: Math.random() * 500, y: Math.random() * 500 },
+        position: { x: node.x, y: node.y },  // Use stored position
         type: 'topicNode',
       }));
 
-      // Create link nodes
+      // Create link nodes with stored positions
       const linkNodes = linkData.nodes.map((node) => ({
         id: node.node_id,
         type: 'linkNode',
@@ -99,7 +121,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
             tags: node.tags
           }
         },
-        position: { x: Math.random() * 500, y: Math.random() * 500 },
+        position: { x: node.x, y: node.y },  // Use stored position
       }));
 
       // Set all nodes
@@ -169,6 +191,32 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
     onNodesChange(changes);
   }, [nodes, onNodesChange]);
 
+  const handleNodeDragStop = useCallback(async (event, node) => {
+    console.log(`Node ${node.id} moved to position:`, node.position);
+
+    // Determine the correct endpoint based on node type
+    const nodeTypePath = node.type === 'topicNode' ? 'topic-node' : 'link-node';
+
+    try {
+        const response = await fetch(`http://localhost:8000/api/chat/${nodeTypePath}/${node.id}/update-position/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                x: node.position.x,
+                y: node.position.y
+            }),
+        });
+
+        if (!response.ok) {
+            console.error('Failed to update node position in database');
+        }
+    } catch (err) {
+        console.error('Error updating node position:', err);
+    }
+  }, []);
+
   return (
     <div className="memo-container">
       <div className="reactflow-wrapper">
@@ -179,6 +227,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeDragStop={handleNodeDragStop}
           fitView
         >
           <Background />

@@ -20,6 +20,8 @@ class TopicNode(models.Model):
     board_name = models.CharField(max_length=255, default="default")
     node_level = models.IntegerField(default=1)
     child_ids = models.JSONField(default=list)
+    x = models.FloatField(default=0.0)
+    y = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"Topic Node: {self.text[:50]}..."
@@ -38,6 +40,8 @@ class LinkNode(models.Model):
     parent_id = models.CharField(max_length=255)  # Reference to parent TopicNode
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    x = models.FloatField(default=0.0)
+    y = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"Link Node: {self.title[:50]}..."
