@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Signup.css';
+import API_BASE_URL from './config';
 
 function Signup() {
   const [username, setUsername] = useState('');
@@ -14,7 +15,7 @@ function Signup() {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:8000/api/chat/register/', {
+      const response = await fetch(`${API_BASE_URL}/api/chat/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import UserProfile from './UserProfile';
 import './Login.css';
+import API_BASE_URL from './config';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -26,7 +27,7 @@ function Login() {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:8000/api/chat/login/', {
+      const response = await fetch(`${API_BASE_URL}/api/chat/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

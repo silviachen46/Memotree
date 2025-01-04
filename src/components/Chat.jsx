@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Chat.css';
+import API_BASE_URL from './config';
 
 function Chat({ setGraphData, onNewChat }) {
   const [messages, setMessages] = useState([]);
@@ -17,7 +18,7 @@ function Chat({ setGraphData, onNewChat }) {
     const userMessage = { role: 'user', content: input };
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat/chat/', {
+      const response = await fetch(`${API_BASE_URL}/api/chat/chat/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import React, { useState, memo } from 'react';
 import { Handle, Position, useReactFlow } from 'reactflow';
 import './TopicNode.css';
+import API_BASE_URL from './config';
 
 const TopicNode = memo(({ data, id }) => {
     const [text, setText] = useState(data?.initialText || '');
@@ -46,8 +47,8 @@ const TopicNode = memo(({ data, id }) => {
     const handleSave = async () => {
         try {
             const url = data?.initialText 
-                ? `http://localhost:8000/api/chat/topic-node/${id}/update/`
-                : 'http://localhost:8000/api/chat/topic-node/';
+                ? `${API_BASE_URL}/api/chat/topic-node/${id}/update/`
+                : `${API_BASE_URL}/api/chat/topic-node/`;
                 
             const method = data?.initialText ? 'PUT' : 'POST';
             

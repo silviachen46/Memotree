@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE_URL from './config';
 import './Search.css';
 
 function Search() {
@@ -12,7 +13,7 @@ function Search() {
         try {
             setLoading(true);
             const response = await fetch(
-                `http://localhost:8000/api/chat/topic-nodes/?type=${searchType}&query=${encodeURIComponent(searchQuery)}`
+                `${API_BASE_URL}/api/chat/topic-nodes/?type=${searchType}&query=${encodeURIComponent(searchQuery)}`
             );
             if (!response.ok) {
                 throw new Error('Failed to fetch nodes');

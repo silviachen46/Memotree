@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import API_BASE_URL from './config';
 import ReactFlow, {
   Controls,
   Background,
@@ -58,7 +59,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
         
         // Include position in the node creation request
         if (nodeType === 'topicNode') {
-            fetch('http://localhost:8000/api/chat/topic-node/', {
+            fetch(`${API_BASE_URL}/api/chat/topic-node/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -87,8 +88,8 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
   const fetchAllNodes = async () => {
     try {
       // Fetch topic nodes
-      const topicResponse = await fetch('http://localhost:8000/api/chat/topic-nodes/');
-      const linkResponse = await fetch('http://localhost:8000/api/chat/link-nodes/');
+      const topicResponse = await fetch(`${API_BASE_URL}/api/chat/topic-nodes/`);
+      const linkResponse = await fetch(`${API_BASE_URL}/api/chat/link-nodes/`);
       
       if (!topicResponse.ok || !linkResponse.ok) {
         throw new Error('Failed to fetch nodes');
@@ -163,7 +164,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
           if (removedNode.type === 'topicNode') {
             console.log(`Topic node ${change.id} is removed`);
             try {
-              const response = await fetch(`http://localhost:8000/api/chat/topic-node/${change.id}/`, {
+              const response = await fetch(`${API_BASE_URL}/api/chat/topic-node/${change.id}/`, {
                 method: 'DELETE'
               });
               if (!response.ok) {
@@ -175,7 +176,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
           } else if (removedNode.type === 'linkNode') {
             console.log(`Link node ${change.id} is removed`);
             try {
-              const response = await fetch(`http://localhost:8000/api/chat/link-node/${change.id}/`, {
+              const response = await fetch(`${API_BASE_URL}/api/chat/link-node/${change.id}/`, {
                 method: 'DELETE'
               });
               if (!response.ok) {
@@ -198,7 +199,7 @@ function MemoAlt({ setAddNodeFunction, setClearNodesFunction }) {
     const nodeTypePath = node.type === 'topicNode' ? 'topic-node' : 'link-node';
 
     try {
-        const response = await fetch(`http://localhost:8000/api/chat/${nodeTypePath}/${node.id}/update-position/`, {
+        const response = await fetch(`${API_BASE_URL}/api/chat/${nodeTypePath}/${node.id}/update-position/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
